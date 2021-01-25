@@ -1,11 +1,22 @@
 from django.shortcuts import render
+import json
 
 # Create your views here.
 
 
 def index(request):
-    return render(request, 'mainapp/index.html')
+    context = {
+        'title': 'geekShop',
+    }
+    return render(request, 'mainapp/index.html', context)
 
 
 def products(request):
-    return render(request, 'mainapp/products.html')
+    with open("mainapp/fixtures/products.json", "r") as read_file:
+        products_decoded = json.load(read_file)
+
+    context = {
+        'title': 'geekShop - Каталог',
+        'products': products_decoded,
+    }
+    return render(request, 'mainapp/products.html', context)
