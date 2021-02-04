@@ -19,12 +19,14 @@ from django.conf import settings
 from django.conf.urls.static import static
 from mainapp import views as mainapp_views
 from authapp import views as authapp_views
+from basket import views as basket_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', mainapp_views.index, name='index'),
     path('products/', include('mainapp.urls', namespace='products')),
     path('auth/', include('authapp.urls', namespace='auth')),
+    path('baskets/', include('basket.urls', namespace='baskets')),
 ]
 
 if settings.DEBUG:
