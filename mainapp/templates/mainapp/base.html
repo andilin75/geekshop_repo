@@ -40,6 +40,9 @@
                         <i class="fas fa-user-circle"></i>
                     </a>
                     </li>
+                    <li class="nav-link">
+                        Товаров в корзине: {{basket_status}}
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'auth:logout' %}">Выйти <i class="fas fa-sign-out-alt"></i></a>
                     </li>
@@ -53,9 +56,6 @@
                         <a class="nav-link" href="{% url 'auth:login' %}">Войти <i class="fas fa-sign-in-alt"></i></a>
                     </li>
                 {% endif %}
-                 <li class="nav-link">
-                   {% now "d.m.Y" %}
-                </li>
             </ul>
         </div>
     </div>
