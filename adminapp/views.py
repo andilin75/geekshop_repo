@@ -1,13 +1,17 @@
 
 from django.shortcuts import render, HttpResponseRedirect
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse_lazy
 from django.contrib.auth.decorators import user_passes_test
 from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.utils.decorators import method_decorator
+from django.db import transaction
+from django.forms import inlineformset_factory
 
 from authapp.models import User
 from adminapp.forms import UserAdminRegisterForm, UserAdminProfileForm
+from ordersapp.models import Order, OrderItem
+from ordersapp.forms import OrderItemForm
 
 
 @user_passes_test(lambda u: u.is_superuser, login_url='/')
@@ -66,43 +70,46 @@ class UserDeleteView(DeleteView):
         self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
-# @user_passes_test(lambda u: u.is_superuser)
-# def admin_users_read(request):
-#     context = {'users': User.objects.all()}
-#     return render(request, 'adminapp/admin-users-read.html', context)
-#
-#
-# @user_passes_test(lambda u: u.is_superuser)
-# def admin_users_create(request):
-#     if request.method == 'POST':
-#         form = UserAdminRegisterForm(data=request.POST, files=request.FILES)
-#         if form.is_valid():
-#             form.save()
-#             return HttpResponseRedirect(reverse('admins:admin_users_read'))
-#         else:
-#             print(form.errors)
-#     else:
-#         form = UserAdminRegisterForm()
-#     context = {'form': form}
-#     return render(request, 'adminapp/admin-users-create.html', context)
-#
-#
-# def admin_users_update(request, id):
-#     user = User.objects.get(id=id)
-#     if request.method == 'POST':
-#         form = UserAdminProfileForm(data=request.POST, files=request.FILES, instance=user)
-#         if form.is_valid():
-#             form.save()
-#             return HttpResponseRedirect(reverse('admins:admin_users_read'))
-#     else:
-#         form = UserAdminProfileForm(instance=user)
-#     context = {'form': form, 'current_user': user}
-#     return render(request, 'adminapp/admin-users-update-delete.html', context)
-#
-#
-# @user_passes_test(lambda u: u.is_superuser)
-# def admin_users_delete(request, id):
-#     user = User.objects.get(id=id)
-#     user.is_active = False
-#     user.save()
-#     return HttpResponseRedirect(reverse('admins:admin_users_read'))
+
+class OrderListView(ListView):
+    model = Order
+    template_name = 'adminapp/admin-order-read.html'
+
+    @method_decorator(user_passes_test(lambda u: u.is_superuser))
+    def dispatch(self, request, *args, **kwargs):
+        return super(OrderListView, self).dispatch(request, *args, **kwargs)
+
+
+class OrderAdminUpdateView(UpdateView):
+    model = Order
+    fields = []
+    success_url = reverse_lazy('admins:admin_order_read')
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        OrderFormSet = inlineformset_factory(Order, OrderItem, form=OrderItemForm, extra=1)
+        if self.request.POST:
+            data['orderitems'] = OrderFormSet(self.request.POST, instance=self.object)
+        else:
+            data['orderitems'] = OrderFormSet(instance=self.object)
+        return data
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        orderitems = context['orderitems']
+
+        with transaction.atomic():
+            form.instance.user = self.request.user
+            self.object = form.save()
+            if orderitems.is_valid():
+                orderitems.instance = self.object
+                orderitems.save()
+
+        if self.object.get_total_cost() == 0:
+            self.object.delete()
+
+        return super().form_valid(form)
+
+    @method_decorator(user_passes_test(lambda u: u.is_superuser))
+    def dispatch(self, request, *args, **kwargs):
+        return super(OrderAdminUpdateView, self).dispatch(request, *args, **kwargs)
