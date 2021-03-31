@@ -1,0 +1,53 @@
+{% extends 'adminapp/base.html' %}
+
+{% block content %}
+    <h1 class="mt-4">Заказы</h1>
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-table mr-1"></i>
+            Заказы
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Создан</th>
+                        <th>Обновлен</th>
+                        <th>Сумма заказа</th>
+                        <th>Статус заказа</th>
+                        <th>Имя пользователя</th>
+                    </tr>
+                    </thead>
+                    <tfoot>
+                    <tr>
+                        <th>ID</th>
+                        <th>Создан</th>
+                        <th>Обновлен</th>
+                        <th>Сумма заказа</th>
+                        <th>Статус заказа</th>
+                        <th>Имя пользователя</th>
+                    </tr>
+                    </tfoot>
+                    <tbody>
+                    {% for order in object_list %}
+                        <tr>
+                            <td>
+                                <a href="{% url "admins:admin_order_update" order.id%}"
+                                   style="color: dodgerblue">{{ order.id }}
+                                </a>
+                            </td>
+                            <td>{{ order.created }}</td>
+                            <td>{{ order.updated }}</td>
+                            <td>{{ order.get_total_cost }}</td>
+                            <td>{{ order.get_status_display }}</td>
+                            <td>{{ order.user.username }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
