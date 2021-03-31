@@ -80,7 +80,6 @@ window.onload = function () {
                         }
                         orderSummaryRecalc();
                     }
-                    console.log('ajax done');
                 },
             });
         }
