@@ -30,9 +30,5 @@ def products(request, category_id=None, page=1):
     per_page = 3
     paginator = Paginator(products.order_by('price'), per_page)
     products_paginator = paginator.page(page)
-    context = {
-        'title': 'geekShop - Каталог',
-        'categories': ProductCategory.objects.all(),
-        'products': products_paginator,
-    }
+    context = {'categories': ProductCategory.get_all(), 'products': products_paginator}
     return render(request, 'mainapp/products.html', context)
