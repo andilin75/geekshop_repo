@@ -8,6 +8,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.views.generic.detail import DetailView
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 
 from basket.models import Basket
 from mainapp.models import Product
@@ -30,6 +31,10 @@ class OrderItemsCreate(CreateView):
     model = Order
     fields = []
     success_url = reverse_lazy('ordersapp:orders_list')
+
+    @method_decorator(login_required())
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
@@ -111,6 +116,10 @@ class OrderDelete(DeleteView):
     model = Order
     success_url = reverse_lazy('ordersapp:orders_list')
 
+    @method_decorator(login_required())
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
 
 class OrderRead(DetailView):
     model = Order
@@ -129,10 +138,9 @@ def order_forming_complete(request, pk):
     return HttpResponseRedirect(reverse('ordersapp:orders_list'))
 
 
+@cache_page(120)
 def get_product_price(request, pk):
-    if request.is_ajax():
-        product = Product.objects.filter(pk=int(pk)).first()
-        if product:
-            return JsonResponse({'price': product.price})
-        else:
-            return JsonResponse({'price': 0})
+    product = Product.objects.filter(pk=int(pk)).first()
+    if product:
+        return JsonResponse({'price': product.price})
+    return JsonResponse({'price': 0})
