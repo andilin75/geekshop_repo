@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 import json
+import sys
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 from django.conf.global_settings import STATIC_ROOT
@@ -27,6 +28,7 @@ SECRET_KEY = '1mq8xuq1+sgb$2ocx4$00-0b_cvq=q-w2yxpq)yge$&i0#nlrr'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+TESTING_MODE = 'test' in sys.argv
 
 ALLOWED_HOSTS = ['*']
 
